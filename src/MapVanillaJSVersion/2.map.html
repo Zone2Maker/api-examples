@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script
+      src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.8/kakao.min.js"
+      integrity="sha384-WUSirVbD0ASvo37f3qQZuDap8wy76aJjmGyXKOYgPL/NdAs8HhgmPlk9dz2XQsNv"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      type="text/javascript"
+      src="//dapi.kakao.com/v2/maps/sdk.js?appkey=발급받은api키"
+    ></script>
+    <link rel="stylesheet" href="./styles.css" />
+
+    <title>지도 띄우기</title>
+  </head>
+  <body>
+    <div id="mapContainer">
+      <div>
+        <h3>지도</h3>
+        <div id="map"></div>
+      </div>
+      <div>
+        <h3>정적 지도</h3>
+        <div id="staticMap"></div>
+      </div>
+    </div>
+
+    <script type="text/javascript">
+      // navigator.geolocation.getCurrentPosition => 프로미스 반환x
+      // Promise로 만들기
+      function getCurrentPosition() {
+        return new Promise((resolve, reject) => {
+          if (navigator.geolocation) {
+            navigator.geolocation.getCurrentPosition((position) => {
+              resolve(position), // 성공하면 position 객체 반환
+                (error) => {
+                  // 실패하면 error 객체 반환
+                  reject(error);
+                };
+            });
+          } else {
+            reject(new Error("브라우저에서 현재 위치를 지원하지 않습니다."));
+          }
+        });
+      }
+
+      // async/await를 사용한 비동기 지도 초기화 함수
+      // 위치 가져오는 거 기다리고 -> 지도 만들기
+      // 아니면 lat, lng 값이 없는데 지도 만들어버려서 위경도값이 없음..
+      async function initMap() {
+        try {
+          // 위치 정보를 가져올 때 기다림
+          const position = await getCurrentPosition();
+          let lat = position.coords.latitude;
+          let lng = position.coords.longitude;
+
+          // 이후에 지도 그리기
+          const container = document.querySelector("#map");
+          console.log(lat, lng);
+          // 2. 지도 옵션 설정
+          const options = {
+            center: new window.kakao.maps.LatLng(lat, lng),
+            level: 3,
+          };
+          // 3. 지도 생성
+          const map = new window.kakao.maps.Map(container, options);
+          // 4. 마커가 표시될 위치
+          const markerPosition = new window.kakao.maps.LatLng(lat, lng);
+          // 5. 마커 생성
+          const marker = new kakao.maps.Marker({ position: markerPosition });
+          // 6. 지도에 마커 표시
+          marker.setMap(map);
+        } catch (error) {
+          console.error("에러가 발생했습니다.", error);
+        }
+      }
+
+      // 검색 -> 위/경도 변환 (주소-좌표 변환)
+      // 로직
+      // 키워드로 장소 검색하고 목록으로 표출 -> 사용자가 목록 중 원하는 장소 선택(클릭)
+      // 클릭 이벤트가 발생한 요소(이벤트리스너로)를 통해 해당 위치의 위/경도 값 가져오기
+
+      // geologation: 현재 위치값 받기
+      // https://apis.map.kakao.com/web/sample/geolocationMarker/
+      // 페이지 로딩될 때 getCurrentPosition 함수 실행. 이제 기다려줌
+      window.addEventListener("load", initMap());
+
+      // kakao.maps.load(() => {
+      // lat = 35.238389043582984;
+      // lng = 128.86970351780747;
+
+      // 일반 지도
+      // https://apis.map.kakao.com/web/sample/basicMap/
+      // 1. 지도 담을 컨테이너 선택
+      // const container = document.querySelector("#map");
+      // container.innerHTML += `<div>lat: ${lat} lng: ${lng}</div>`;
+      // console.log(lat, lng);
+      // // 2. 지도 옵션 설정
+      // const options = {
+      //   center: new window.kakao.maps.LatLng(lat, lng),
+      //   level: 3,
+      // };
+      // // 3. 지도 생성
+      // const map = new window.kakao.maps.Map(container, options);
+      // 4. 마커가 표시될 위치
+      const markerPosition = new window.kakao.maps.LatLng(
+        35.238389043582984,
+        128.86970351780747
+      );
+      // 5. 마커 생성
+      const marker = new kakao.maps.Marker({ position: markerPosition });
+      // 6. 지도에 마커 표시
+      // marker.setMap(map);
+      // 7. 지도 위의 마커 제거
+      // marker.setMap(null);
+
+      // 정적 지도
+      // https://apis.map.kakao.com/web/sample/staticMap/
+      // 1. 컨테이너 선택, 옵션 설정 (일반 지도처럼 나눠서 해도 됨)
+      let staticMapContainer = document.querySelector("#staticMap"),
+        staticMapOption = {
+          center: new kakao.maps.LatLng(35.238389043582984, 128.86970351780747),
+          level: 4,
+          marker: marker,
+        };
+      // 3. 이미지 지도 표시할와 옵션으로 이미지 지도 생성
+      let staticMap = new kakao.maps.StaticMap(
+        staticMapContainer,
+        staticMapOption
+      );
+      // 4. 이미지 지도에 마커 표시하기
+      staticMapOption = { ...staticMapOption, marker: marker };
+      staticMap = new kakao.maps.StaticMap(staticMapContainer, staticMapOption);
+      // });
+    </script>
+    <!-- <script rel="stylesheet" href="./kakaomap.js"></script> -->
+  </body>
+</html>
