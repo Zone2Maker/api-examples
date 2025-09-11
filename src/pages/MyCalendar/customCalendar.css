@@ -1,0 +1,138 @@
+button {
+  border: 1px solid #dbdbdb;
+  background-color: none;
+}
+
+/* 달력 전체 container */
+.react-calendar {
+  width: 280px;
+  border: 1px solid #333;
+  border-radius: 15px;
+  overflow: hidden;
+  padding: 10px;
+  background-color: white;
+  box-shadow: 0px 0px 3px 2px rgba(161, 161, 161, 0.3);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  box-sizing: border-box;
+}
+
+/* 버튼, 년도 container */
+.react-calendar__navigation {
+  width: 200px;
+  height: 25px;
+  display: flex;
+  flex-direction: center;
+  gap: 5px;
+}
+
+.react-calendar__navigation > button {
+  border: none;
+  border-radius: 8px;
+  background-color: transparent;
+  font-size: 18px;
+}
+
+/* << < xxxx년 xx월 > >> */
+.react-calendar__navigation__label {
+}
+
+.react-calendar__navigation__label > span {
+  font-size: 14px;
+}
+
+/* 달력 본체 */
+.react-calendar__viewContainer {
+  width: 100%;
+}
+
+/*  */
+.react-calendar__month-view__days {
+}
+
+/* 일-월 -> 총 width를 7칸으로 비율 상 나누게 되어있음*/
+.react-calendar__month-view__weekdays {
+  font-size: 12px;
+}
+
+abbr {
+  text-decoration: none;
+}
+
+.react-calendar__month-view__weekdays__weekday {
+  /* display: flex;
+  justify-content: center; */
+  padding: 5px;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.react-calendar__month-view__weekdays__weekday:nth-child(7) abbr {
+  color: blue; /* 토요일 */
+}
+
+.react-calendar__month-view__weekdays__weekday:nth-child(1) abbr {
+  color: red; /* 일요일 */
+}
+
+/* 해당 월이 아닌 날짜 */
+.react-calendar__month-view__days__day--neighboringMonth {
+  opacity: 0.5;
+}
+
+.react-calendar__month-view__days__day:nth-child(7n) {
+  color: rgb(36, 36, 245); /* 토요일 날짜 */
+}
+
+.react-calendar__month-view__days__day:nth-child(7n + 1) {
+  color: rgb(252, 28, 28); /* 일요일 날짜 */
+}
+
+/* 날짜 칸 */
+.react-calendar__tile {
+  width: 100%;
+  height: 35px;
+  background-color: transparent;
+  border: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  box-sizing: border-box;
+  border-radius: 8px;
+  position: relative;
+}
+
+/* 오늘 날짜 */
+.react-calendar__tile--now {
+  background-color: #dbdbdb;
+  font-weight: 600;
+}
+
+.react-calendar__tile > abbr {
+  font-size: 11px;
+  position: relative;
+  z-index: 2;
+}
+
+.icon-wrapper {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1;
+  opacity: 0.8;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: none;
+}
+
+.icon-wrapper > svg {
+  font-size: 30px;
+  color: pink;
+}

@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <script
+      src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.8/kakao.min.js"
+      integrity="sha384-WUSirVbD0ASvo37f3qQZuDap8wy76aJjmGyXKOYgPL/NdAs8HhgmPlk9dz2XQsNv"
+      crossorigin="anonymous"
+    ></script>
+    <script
+      type="text/javascript"
+      src="//dapi.kakao.com/v2/maps/sdk.js?appkey=8044925362d9777798e71e46a8a96879&libraries=services"
+    ></script>
+    <title>주소 검색</title>
+    <style>
+      body,
+      html {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+        overflow: hidden;
+      }
+
+      h2 {
+        margin: 0;
+        font-size: 20px;
+      }
+
+      #container {
+        height: 100%;
+        padding: 20px;
+        box-sizing: border-box;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      #subContainer {
+        width: 900px;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        gap: 15px;
+      }
+
+      .left {
+        width: 350px;
+        height: 100%;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        align-items: center;
+        gap: 10px;
+      }
+
+      #top {
+        width: 100%;
+        display: flex;
+      }
+
+      .searchInput {
+        flex-grow: 1;
+        outline: none;
+        padding: 8px 16px;
+        margin-right: 15px;
+        font-size: 16px;
+        border: 1px solid #191919;
+        border-radius: 15px;
+        box-sizing: border-box;
+      }
+
+      .searchBtn {
+        font-size: 16px;
+        padding: 6px 16px;
+        border: none;
+        border-radius: 8px;
+        background-color: #fee500;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        box-sizing: border-box;
+      }
+
+      .searchBtn:hover {
+        background-color: #e4c903;
+      }
+
+      #menu_wrap {
+        width: 100%;
+        height: 530px;
+        overflow-y: auto;
+        scrollbar-width: thin;
+      }
+
+      #placesList {
+        margin: 0;
+        padding: 0;
+        list-style-type: none;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+      }
+
+      .item {
+        padding: 15px;
+        border-top: 1px solid #dbdbdb;
+        cursor: pointer;
+      }
+
+      .item:hover {
+        background-color: aliceblue;
+      }
+
+      .info {
+        display: flex;
+        flex-direction: column;
+        font-size: 13px;
+      }
+
+      .header {
+        width: 100%;
+        height: 20px;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        gap: 5px;
+      }
+
+      .header > h5 {
+        margin: 0;
+        margin-bottom: 4px;
+        padding: 0;
+        font-weight: 400;
+        font-size: 17px;
+      }
+
+      .header > span {
+        font-size: 12px;
+        color: #888;
+      }
+
+      #pagination {
+        width: 100%;
+        height: 50px;
+        padding: 0 7px;
+        box-sizing: border-box;
+        background-color: aqua;
+      }
+
+      #right {
+        width: 500px;
+        height: 100%;
+        padding: 50px 0;
+        box-sizing: border-box;
+      }
+
+      #map {
+        width: 100%;
+        height: 100%;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container">
+      <h2>검색해서 목록으로 나타내기</h2>
+      <div id="subContainer">
+        <div class="left">
+          <div id="top">
+            <input
+              id="keywordInput"
+              class="searchInput"
+              placeholder="장소, 주소 검색"
+            />
+            <button
+              id="keywordBtn"
+              class="searchBtn"
+              onClick="searchWithKeyword()"
+            >
+              검색
+            </button>
+          </div>
+          <div id="menu_wrap">
+            <ul id="placesList"></ul>
+          </div>
+          <!-- 필요없을 듯? -->
+          <div id="pagination"></div>
+        </div>
+        <div id="right">
+          <div id="map"></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let markers = []; // 마커 담을 배열
+
+      // 지도 만들기
+      let mapContainer = document.querySelector("#map");
+
+      let option = {
+        center: new kakao.maps.LatLng(35.236446, 128.878745),
+        level: 4,
+      };
+
+      map = new window.kakao.maps.Map(mapContainer, option);
+
+      // 장소 검색 객체 생성
+      let keywordPs = new kakao.maps.services.Places();
+
+      // 검색 결과 목록이나 마커를 클릭했을 때 장소명을 표출할 인포윈도우
+      let infowindow = new kakao.maps.InfoWindow({ zindex: 1 });
+
+      // 키워드로 장소 검색
+      function searchWithKeyword() {
+        const keyword = document.querySelector("#keywordInput").value;
+        console.log(keyword);
+
+        if (!keyword.replace(/^\s+|\s+$/g, "")) {
+          alert("키워드를 입력해주세요!");
+          return false;
+        }
+
+        // 장소 검색 객체를 통해 키워드로 장소 검색 요청
+        keywordPs.keywordSearch(keyword, placeSearchCB);
+      }
+
+      // 장소 검색 완료 시 호출되는 콜백 함수
+      function placeSearchCB(data, status, pagination) {
+        if (status === kakao.maps.services.Status.OK) {
+          // 검색 완료시 검색 목록과 마커 표출
+          displayPlaces(data);
+          // 페이지 번호 표출
+          displayPagination(pagination);
+        } else if (status === kakao.maps.services.Status.ERROR) {
+          alert("검색 결과 중 오류가 발생했습니다.");
+          return;
+        }
+      }
+
+      // 검색 결과 목록과 마커를 표출하는 함수
+      function displayPlaces(places) {
+        // places -> 검색 성공하고 받은 장소 목록 데이터
+        const listEl = document.getElementById("placesList"),
+          menuEl = document.getElementById("menu_wrap"),
+          fragment = document.createDocumentFragment(), // 여러 DOM 요소들을 저장할 수 있는 임시 저장소
+          bounds = new kakao.maps.LatLngBounds(),
+          listStr = "";
+
+        // 검색 결과 목록에 추가된 항목들 제거(초기화)
+        console.log(listEl);
+        removeAllChildNodes(listEl);
+
+        // 지도에 표시되고 있는 마커 제거(초기화)
+        removeMarker();
+
+        // 각각의 place가 갖고있는 값 -> 위도, 경도, 장소명
+        // li요소에 넣어주면 될 듯
+        for (let i = 0; i < places.length; i++) {
+          // 마커 생성 후 지도에 표시
+          const placePosition = new kakao.maps.LatLng(places[i].y, places[i].x),
+            marker = addMarker(placePosition, i),
+            itemEl = getListItem(i, places[i]); // 검색 결과 항목 Element 생성
+
+          // 검색된 장소 위치 기준으로 지도 범위 재설정 위해서
+          // LatLngBounds 객체에 좌표 추가
+          bounds.extend(placePosition);
+
+          // 마커와 검색 결과 항목에 mouseover 했을 때
+          // 해당 장소에 인포윈도우에 장소명 표시
+          // 여기서 주소값 가져올 수 있을.. 듯?
+          // mouseout했을 때 윈포윈도우 닫기
+          (function (marker, title) {
+            // 마커에 이벤트리스너 등록
+            kakao.maps.event.addListener(marker, "mouseover", function () {
+              displayInfowindow(marker, title);
+            });
+
+            kakao.maps.event.addListener(marker, "mouseout", function () {
+              infowindow.close();
+            });
+
+            // 검색 결과 항목(li)에 이벤트리스너 등록
+            itemEl.onmouseover = function () {
+              displayInfowindow(marker, title);
+            };
+
+            itemEl.onmouseout = function () {
+              infowindow.close();
+            };
+          })(marker, places[i].place_name);
+
+          fragment.appendChild(itemEl);
+        }
+
+        listEl.appendChild(fragment);
+        menuEl.scrollTop = 0; // 스크롤 맨 위로
+
+        // 검색된 장소 위치를 기준으로 지도 범위 재설정
+        map.setBounds(bounds);
+      }
+
+      // 검색 결과 항목을 Element로 반환하는 함수
+      function getListItem(index, places) {
+        // places객체 속성
+        // place_name, address_name, road_address_name, phone, category_name, place_url, x, y, id
+
+        const category = places.category_name.split(" > ");
+        let el = document.createElement("li"),
+          // 여기 중요!! 목록에 보여주고 싶은 정보 여기서 커스텀하면 됨!!
+          itemStr = `<span class="markerbg marker_${index + 1}"></span>
+          <div class="info">
+            <div class="header">
+                <h5>${places.place_name}</h5>
+                <span>${
+                  places.category_group_name
+                    ? places.category_group_name
+                    : category[category.length - 1]
+                }</span>
+            </div>`;
+
+        if (places.road_address_name) {
+          // 도로명 주소가 있으면 요소에 도로명 주소
+          itemStr += `<div>${places.road_address_name}</div>`;
+        } else {
+          // 도로명 주소가 없으면? 지번 주소 추가
+          itemStr += `<div>${places.address_name}</div>`;
+        }
+
+        if (places.phone) {
+          itemStr += `<div class="phone">${places.phone}</div>`;
+        }
+        el.innerHTML = itemStr + "</div>";
+        el.className = "item";
+        // 좌표값 넣어주기 (배열)
+        // 해당 요소에 클릭 이벤트 발생 시 좌표값 가져오기 가능
+        el.dataset.loc = [places.x, places.y];
+
+        return el;
+      }
+
+      // 마커를 생성하고 지도 위에 마커 표시하는 함수
+      function addMarker(position, idx, title) {
+        // 마커 이미지 url, 스프라이트 이미지를 씁니다
+        // 스프라이트: 여러 이미지를 하나의 큰 이미지 파일에 합쳐놓은 것
+        // 0번부터 15번까지의 파란색 숫자 마커 이미지 들어있음
+        // 마커 이미지 하나의 크기 지정해두고 인덱스에 따라 잘라쓰는 것
+        // 그니까 마커 다른 거 사용하고 싶으면 내가 마커 이미지 스프라이트로 만들어서 쓰면 됨..
+        // 아니면 전부 똑같은 마커 사용하고 싶으면 마커 이미지 파일 하나로
+        // MarkerImage 사용할 때 imgSrc에 경로, imgSize에 크기만 지정해주면 됨
+        let imgSrc =
+            "https://t1.daumcdn.net/localimg/localimages/07/mapapidoc/marker_number_blue.png", // 링크 들어가서 확인 ㄱㄱ
+          imgSize = new kakao.maps.Size(36, 37), // 마커 크기
+          imgOptions = {
+            spriteSize: new kakao.maps.Size(36, 691), // 스프라이트 이미지의 크기
+            spriteOrigin: new kakao.maps.Point(0, idx * 46 + 10), // 스프라이트 이미지 중 사용할 영역의 좌상단 좌표, 이미지 크기도 있으므로 잘라서 쓸 수 있게됨
+            offset: new kakao.maps.Point(13, 37), // 마커 좌표에 일치시킬 이미지 내에서의 좌표
+          },
+          markerImage = new kakao.maps.MarkerImage(imgSrc, imgSize, imgOptions),
+          marker = new kakao.maps.Marker({
+            // 마커 생성
+            position: position, // 마커 위치
+            image: markerImage,
+          });
+
+        marker.setMap(map); // 지도에 마커 표출
+        markers.push(marker); // 배열에 생성된 마커 추가
+
+        return marker;
+      }
+
+      // 지도 위에 표시된 마커 모두 제거하는 함수(초기화)
+      function removeMarker() {
+        // for문으로 모든 마커 객체 가져오기
+        for (let i = 0; i < markers.length; i++) {
+          // 각 마커를 지도에서 없애기
+          markers[i].setMap(null);
+        }
+        // 배열 초기화 / 마커 객체 목록 비우기
+        markers = [];
+      }
+
+      // 검색 결과 목록 하단에 페이지 번호 표시하는 함수
+      function displayPagination(pagination) {
+        let paginationEl = document.getElementById("pagination"),
+          fragment = document.createDocumentFragment(),
+          i;
+
+        // 기존에 추가된 페이지 번호 삭제(초기화)
+        while (paginationEl.hasChildNodes) {
+          paginationEl.removeChild(paginationEl.lastChild);
+        }
+
+        // 다시 만듦
+        for (i = 1; i <= pagination.last; i++) {
+          const el = document.createElement("a");
+          el.href = "#";
+          el.innerHTML = i;
+
+          // 요소가 지금 선택된 페이지면
+          if (i === pagination.current) {
+            el.className = "on";
+          } else {
+            // 선택되지 않은 페이지면 페이지 이동 함수 추가
+            el.onclick = (function (i) {
+              return function () {
+                pagination.gotoPage(i);
+              };
+            })(i);
+          }
+          fragment.appendChild(el);
+        }
+        paginationEl.appendChild(fragment);
+      }
+
+      // 검색 결과 목록 또는 마커를 클릭했을 때 호출되는 함수
+      // 인포윈도우에 장소명 표시
+      // 다른 것도 표시하고 싶으면 여기서 하면 될 듯
+      function displayInfowindow(marker, title) {
+        const content = `<div style="padding: 5px; z-index:1;">${title}</div>`;
+
+        infowindow.setContent(content);
+        infowindow.open(map, marker);
+      }
+
+      // 검색 결과 목록의 자식 Element를 제거하는 함수
+      function removeAllChildNodes(el) {
+        while (el.hasChildNodes()) {
+          el.removeChild(el.lastChild);
+        }
+      }
+    </script>
+  </body>
+</html>
