@@ -31,8 +31,13 @@ function WeatherApi() {
             temp : 295.35   // 현재 기온, (기본 단위: Kelvin)
             temp_max : 295.35 // 최고 기온
             temp_min : 295.35 // 최저 기온
-         * 
-         * 
+         */
+
+        /**
+         * 날씨 종류
+         * https://injunech.tistory.com/178
+         * https://peter-codinglife.tistory.com/70
+         * clear sky, few clouds, scattered clouds, broken clouds, shower rain, rain, thunderstorm, snow, mist
          */
       } catch (error) {
         console.log("날씨 정보를 가져오는 데 실패했습니다.", error);
@@ -71,7 +76,13 @@ function WeatherApi() {
       <div>경도: {coords.lng}</div>
       <div>---------------------------------</div>
       <div>현재 날씨는.. {weather?.weather[0].main}</div>
-      <div>현재 기온은.. {kelvinToCelcius(weather.main.temp)}'C</div>
+      <div>현재 기온은.. {kelvinToCelcius(weather?.main.temp)}'C</div>
+      {/* For code 500 - light rain icon = "10d". See below a full list of codes
+        URL is https://openweathermap.org/img/wn/10d@2x.png */}
+      <img
+        src={`https://openweathermap.org/img/wn/${weather?.weather[0].icon}@2x.png`}
+        alt="날씨 아이콘"
+      />
     </div>
   );
 }
