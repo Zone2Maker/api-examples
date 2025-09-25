@@ -1,8 +1,9 @@
 import InfinityScroll from "./pages/InfinityPagination/InfinityScroll";
-import KakaoMap from "./pages/KaKaoMap/KakaoMap";
-import MarkerClustering from "./pages/KaKaoMap/MarkerClustering";
+import KakaoMap from "./pages/KaKaoMap/Origin/KakaoMap";
+import MarkerClustering from "./pages/KaKaoMap/Origin/MarkerClustering";
 import MyCalendar from "./pages/MyCalendar/MyCalendar";
 import WeatherApi from "./pages/WeatherApi/WeatherApi";
+import LibraryMarkerClustering from "./pages/KaKaoMap/MarkerClustringLibrary/LibraryMarkerClustering";
 
 function App() {
   return (
@@ -11,7 +12,8 @@ function App() {
       {/* <KakaoMap /> */}
       {/* <InfinityScroll /> */}
       {/* <MarkerClustering /> */}
-      <WeatherApi />
+      {/* <WeatherApi /> */}
+      <LibraryMarkerClustering />
     </>
   );
 }
