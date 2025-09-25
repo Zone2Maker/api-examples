@@ -1,12 +1,8 @@
-# React + Vite
+# 프로젝트에 사용할 기술, 라이브러리, 함수 등을 모아둔 레포지토리 입니다.
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
-
-Currently, two official plugins are available:
-
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
-
-## Expanding the ESLint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+- STOMP 웹소켓
+- react-calendar 라이브러리
+- 카카오맵 API (정적, 동적, 검색, 마커클러스터링)
+- 무한 스크롤
+- OpenWeatherAPI
+- 랜덤 닉네임 생성기
